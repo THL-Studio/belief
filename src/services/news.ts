@@ -1,3 +1,5 @@
+import { format, parse } from 'date-fns';
+
 /**
  * Represents a news article.
  */
@@ -17,7 +19,7 @@ export interface Article {
   /**
    * The date the article was published (ISO 8601 format).
    */
-  publishedAt: string;
+  publishedAt: string; // Keep as ISO string for consistency if possible, or format later
   /**
    * A short description or snippet of the article.
    */
@@ -28,97 +30,117 @@ export interface Article {
   imageUrl?: string;
 }
 
+// Basic CSV parser (handles simple quoted fields, might need enhancement for complex CSVs)
+function parseCSV(csvText: string): string[][] {
+    const lines = csvText.trim().split('\n');
+    const result: string[][] = [];
+    for (const line of lines) {
+        const row: string[] = [];
+        let currentField = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            const nextChar = line[i + 1];
+
+            if (char === '"' && nextChar === '"') { // Escaped quote
+                currentField += '"';
+                i++; // Skip next quote
+            } else if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                row.push(currentField.trim());
+                currentField = '';
+            } else {
+                 // Preserve carriage returns within fields if needed, otherwise handle line breaks appropriately
+                if (char !== '\r') {
+                  currentField += char;
+                }
+            }
+        }
+        row.push(currentField.trim()); // Add last field
+        if (row.some(field => field.length > 0)) { // Avoid adding completely empty rows if any
+          result.push(row);
+        }
+    }
+    return result;
+}
+
+// Function to safely parse and format date, returning a default or null if invalid
+function safeFormatDate(dateString: string | undefined): string {
+  if (!dateString) {
+    return new Date().toISOString(); // Or return 'Date unavailable' or similar string
+  }
+  try {
+    // Attempt to parse assuming a common format like MM/DD/YYYY or YYYY-MM-DD
+    // Adjust the parsing format 'MM/dd/yyyy' based on the actual format in your sheet
+    const parsedDate = parse(dateString, 'M/d/yyyy', new Date()); // Example format M/D/YYYY
+    if (isNaN(parsedDate.getTime())) {
+        // Try another common format if the first fails
+        const parsedDateISO = parse(dateString, 'yyyy-MM-dd', new Date());
+         if (isNaN(parsedDateISO.getTime())) {
+            // If still invalid, try direct ISO parsing or return default
+            const directParsed = new Date(dateString);
+             if (isNaN(directParsed.getTime())) {
+               console.warn(`Invalid date format found: ${dateString}. Using current date.`);
+               return new Date().toISOString();
+             }
+             return directParsed.toISOString();
+         }
+         return parsedDateISO.toISOString();
+    }
+    return parsedDate.toISOString();
+  } catch (e) {
+    console.error(`Error parsing date: ${dateString}`, e);
+    return new Date().toISOString(); // Fallback to current date/time in ISO format
+  }
+}
+
+
 /**
- * Asynchronously retrieves news articles from a given source/category.
+ * Asynchronously retrieves news articles from a Google Sheet CSV.
  *
- * @param category The news category (e.g., 'general', 'technology', 'business').
+ * @param category The news category (currently ignored, fetches all).
  * @returns A promise that resolves to an array of Article objects.
  */
 export async function getNews(category: string): Promise<Article[]> {
-  console.log(`Fetching news for category: ${category}`);
-  // TODO: Replace this with a real API call to a news service (e.g., NewsAPI, GNews).
-  // Make sure to handle API keys securely (e.g., via environment variables).
+  const csvUrl = 'https://docs.google.com/spreadsheets/d/1Zdv2-P8VGEdgS65mHksjFpPjxWMvqm0SK1E-ZK9xGW4/export?format=csv';
+  console.log(`Fetching news from Google Sheet: ${category}`); // Log category for context
 
-  // Simulating API latency
-  await new Promise(resolve => setTimeout(resolve, 500));
+  try {
+    const response = await fetch(csvUrl, { next: { revalidate: 3600 } }); // Revalidate every hour
+    if (!response.ok) {
+      throw new Error(`Failed to fetch CSV: ${response.statusText}`);
+    }
+    const csvText = await response.text();
+    const rows = parseCSV(csvText);
 
-  // Placeholder data - replace with actual API response parsing
-  const placeholderArticles: Article[] = [
-    {
-      title: 'Breaking News: Major Event Unfolds Downtown',
-      url: 'https://example.com/news/breaking-1',
-      source: 'City Times',
-      publishedAt: '2024-07-28T10:30:00Z',
-      description: 'A significant event is currently happening in the city center, causing disruptions. Authorities are on the scene.',
-      imageUrl: 'https://picsum.photos/400/200', // data-ai-hint: city street news
-    },
-    {
-      title: 'Tech Giant Announces Revolutionary New Device',
-      url: 'https://example.com/news/tech-giant-1',
-      source: 'Tech Today',
-      publishedAt: '2024-07-28T09:00:00Z',
-      description: 'The long-awaited gadget promises to change the way we interact with technology, featuring cutting-edge AI integration.',
-      imageUrl: 'https://picsum.photos/400/201', // data-ai-hint: futuristic gadget technology
-    },
-    {
-      title: 'Global Markets React to Economic Summit Outcome',
-      url: 'https://example.com/news/markets-react-1',
-      source: 'Financial Post',
-      publishedAt: '2024-07-27T22:15:00Z',
-      description: 'Stock markets around the world showed mixed reactions following the conclusion of the international economic summit.',
-      imageUrl: 'https://picsum.photos/400/202', // data-ai-hint: stock market graph
-    },
-    {
-      title: 'New Study Reveals Surprising Health Benefits of Common Vegetable',
-      url: 'https://example.com/news/health-study-1',
-      source: 'Wellness Weekly',
-      publishedAt: '2024-07-27T18:00:00Z',
-      description: 'Researchers have found unexpected positive effects on long-term health associated with regular consumption of broccoli.',
-      imageUrl: 'https://picsum.photos/400/203', // data-ai-hint: broccoli vegetable health
-    },
-    {
-      title: 'Local Sports Team Secures Playoff Spot in Dramatic Finish',
-      url: 'https://example.com/news/sports-win-1',
-      source: 'Local Gazette',
-      publishedAt: '2024-07-27T23:55:00Z',
-      description: 'A last-minute goal propelled the home team into the championship playoffs after a nail-biting final game of the season.',
-      // No image for this one to test fallback
-    },
-     {
-      title: 'Advancements in Renewable Energy Storage Technology',
-      url: 'https://example.com/news/renewable-energy-1',
-      source: 'Eco Future',
-      publishedAt: '2024-07-28T11:00:00Z',
-      description: 'A breakthrough in battery technology could significantly improve the efficiency and viability of solar and wind power.',
-      imageUrl: 'https://picsum.photos/400/204', // data-ai-hint: solar panels battery
-    },
-    {
-      title: 'Hollywood Star Set to Direct Upcoming Indie Film',
-      url: 'https://example.com/news/hollywood-direct-1',
-      source: 'Entertainment Buzz',
-      publishedAt: '2024-07-27T15:45:00Z',
-      description: 'Known for blockbusters, the acclaimed actor is stepping behind the camera for a passion project focusing on a historical drama.',
-      imageUrl: 'https://picsum.photos/400/205', // data-ai-hint: movie set director
-    },
-     {
-      title: 'Travel Industry Sees Surge in Bookings for Autumn Getaways',
-      url: 'https://example.com/news/travel-surge-1',
-      source: 'Wanderlust Journal',
-      publishedAt: '2024-07-28T08:20:00Z',
-      description: 'As summer winds down, airlines and hotels report a significant increase in reservations for fall travel destinations.',
-      imageUrl: 'https://picsum.photos/400/206', // data-ai-hint: airplane travel autumn leaves
-    },
-  ];
+    // Assuming the first row is headers, slice(1) skips it.
+    const articles: Article[] = rows.slice(1).map((row): Article | null => {
+       // Basic validation: Check if essential fields like title and URL exist
+       if (!row[0] || !row[4]) {
+         console.warn("Skipping row due to missing title or URL:", row);
+         return null; // Skip this row if essential data is missing
+       }
 
-  // Simple filtering based on category for demonstration
-  // In a real scenario, the API call would handle category filtering.
-  if (category.toLowerCase() === 'technology') {
-    return placeholderArticles.filter(a => a.source === 'Tech Today' || a.source === 'Eco Future');
+      return {
+        title: row[0] || 'No Title', // Column A: Title
+        publishedAt: safeFormatDate(row[1]), // Column B: Date -> Format to ISO string
+        imageUrl: row[2] || undefined, // Column C: Image URL (optional)
+        description: row[3] || '', // Column D: Article Summary/Content
+        url: row[4] || '#', // Column E: Article URL
+        source: row[5] || 'Unknown Source', // Column F: Source
+      };
+    }).filter((article): article is Article => article !== null); // Filter out null entries
+
+    // TODO: Implement filtering based on 'category' if needed in the future
+    // For now, returns all articles regardless of category
+
+    return articles;
+
+  } catch (error) {
+    console.error('Error fetching or parsing news from Google Sheet:', error);
+    // Return empty array or throw error, depending on desired behavior
+    return [];
+    // Or: throw new Error('Could not load news data.');
   }
-  if (category.toLowerCase() === 'business') {
-     return placeholderArticles.filter(a => a.source === 'Financial Post');
-  }
-
-  // Return a mix for 'general' or unknown categories
-  return placeholderArticles;
 }
