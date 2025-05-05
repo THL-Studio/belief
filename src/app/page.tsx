@@ -17,7 +17,7 @@ export default async function Home() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold tracking-tight">Top Stories</h1>
+      {/* Removed: <h1 className="text-3xl font-bold tracking-tight">Top Stories</h1> */}
 
       {error && (
          <Alert variant="destructive">
