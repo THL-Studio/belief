@@ -66,7 +66,11 @@ export function ArticleCard({ article }: ArticleCardProps) {
               className="object-cover" // Ensure image covers the area
               data-ai-hint={imageUrlHint} // Use derived hint
               onError={handleImageError} // Use the handler
-              priority={false} // Avoid prioritizing potentially numerous images
+              priority={
+                article.imageUrl.includes(
+                  "www.bostonherald.com/wp-content/uploads/2024/05/BHR-Z-EDITORIAL-01_29e509.jpg"
+                )
+                  ? true : false}
             />
         </div>
        ) : (
