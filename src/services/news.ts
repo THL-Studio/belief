@@ -22,6 +22,10 @@ export interface Article {
    * A short description or snippet of the article.
    */
   description: string;
+  /**
+  * The URL of the article's featured image. Optional.
+  */
+  imageUrl?: string;
 }
 
 /**
@@ -46,6 +50,7 @@ export async function getNews(category: string): Promise<Article[]> {
       source: 'City Times',
       publishedAt: '2024-07-28T10:30:00Z',
       description: 'A significant event is currently happening in the city center, causing disruptions. Authorities are on the scene.',
+      imageUrl: 'https://picsum.photos/400/200', // data-ai-hint: city street news
     },
     {
       title: 'Tech Giant Announces Revolutionary New Device',
@@ -53,6 +58,7 @@ export async function getNews(category: string): Promise<Article[]> {
       source: 'Tech Today',
       publishedAt: '2024-07-28T09:00:00Z',
       description: 'The long-awaited gadget promises to change the way we interact with technology, featuring cutting-edge AI integration.',
+      imageUrl: 'https://picsum.photos/400/201', // data-ai-hint: futuristic gadget technology
     },
     {
       title: 'Global Markets React to Economic Summit Outcome',
@@ -60,6 +66,7 @@ export async function getNews(category: string): Promise<Article[]> {
       source: 'Financial Post',
       publishedAt: '2024-07-27T22:15:00Z',
       description: 'Stock markets around the world showed mixed reactions following the conclusion of the international economic summit.',
+      imageUrl: 'https://picsum.photos/400/202', // data-ai-hint: stock market graph
     },
     {
       title: 'New Study Reveals Surprising Health Benefits of Common Vegetable',
@@ -67,6 +74,7 @@ export async function getNews(category: string): Promise<Article[]> {
       source: 'Wellness Weekly',
       publishedAt: '2024-07-27T18:00:00Z',
       description: 'Researchers have found unexpected positive effects on long-term health associated with regular consumption of broccoli.',
+      imageUrl: 'https://picsum.photos/400/203', // data-ai-hint: broccoli vegetable health
     },
     {
       title: 'Local Sports Team Secures Playoff Spot in Dramatic Finish',
@@ -74,6 +82,7 @@ export async function getNews(category: string): Promise<Article[]> {
       source: 'Local Gazette',
       publishedAt: '2024-07-27T23:55:00Z',
       description: 'A last-minute goal propelled the home team into the championship playoffs after a nail-biting final game of the season.',
+      // No image for this one to test fallback
     },
      {
       title: 'Advancements in Renewable Energy Storage Technology',
@@ -81,6 +90,7 @@ export async function getNews(category: string): Promise<Article[]> {
       source: 'Eco Future',
       publishedAt: '2024-07-28T11:00:00Z',
       description: 'A breakthrough in battery technology could significantly improve the efficiency and viability of solar and wind power.',
+      imageUrl: 'https://picsum.photos/400/204', // data-ai-hint: solar panels battery
     },
     {
       title: 'Hollywood Star Set to Direct Upcoming Indie Film',
@@ -88,6 +98,7 @@ export async function getNews(category: string): Promise<Article[]> {
       source: 'Entertainment Buzz',
       publishedAt: '2024-07-27T15:45:00Z',
       description: 'Known for blockbusters, the acclaimed actor is stepping behind the camera for a passion project focusing on a historical drama.',
+      imageUrl: 'https://picsum.photos/400/205', // data-ai-hint: movie set director
     },
      {
       title: 'Travel Industry Sees Surge in Bookings for Autumn Getaways',
@@ -95,6 +106,7 @@ export async function getNews(category: string): Promise<Article[]> {
       source: 'Wanderlust Journal',
       publishedAt: '2024-07-28T08:20:00Z',
       description: 'As summer winds down, airlines and hotels report a significant increase in reservations for fall travel destinations.',
+      imageUrl: 'https://picsum.photos/400/206', // data-ai-hint: airplane travel autumn leaves
     },
   ];
 
