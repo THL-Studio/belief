@@ -17,19 +17,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={GeistSans.className}>
-      <body className="antialiased flex flex-col min-h-screen">
+      <body className="antialiased flex flex-col items-center min-h-screen"> {/* Added items-center */}
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="container flex h-14 items-center">
+          <div className="container flex h-14 items-center px-4"> {/* Added px-4 for padding */}
             <Link href="/" className="flex items-center space-x-2">
               <Newspaper className="h-6 w-6 text-primary" />
               <span className="font-bold text-lg">Belief</span>
             </Link>
           </div>
         </header>
-        <main className="flex-1 container py-8">
+        <main className="flex-1 container py-8 w-full"> {/* Ensure main container takes width */}
           {children}
         </main>
-         <footer className="py-6 md:px-8 md:py-0 border-t bg-background">
+         <footer className="py-6 md:px-8 md:py-0 border-t bg-background w-full"> {/* Ensure footer takes width */}
            <div className="container flex flex-col items-center justify-center gap-4 md:h-20 md:flex-row">
               <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
                 Built by Firebase Studio.

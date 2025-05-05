@@ -1,3 +1,5 @@
+'use client'; // Add this directive
+
 import type { Article } from '@/services/news';
 import Image from 'next/image';
 import {
