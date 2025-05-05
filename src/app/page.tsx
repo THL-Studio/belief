@@ -8,33 +8,41 @@ export default async function Home() {
   let error: string | null = null;
 
   try {
-    // Fetch news articles - using the placeholder function for now
+    // Fetch news articles
+    console.log("Attempting to fetch news articles...");
     articles = await getNews('general'); // Pass a default source or category
-  } catch (e) {
+    console.log(`Fetched ${articles.length} articles.`);
+  } catch (e: any) { // Catch specific error type if known, else 'any'
     console.error("Failed to fetch news:", e);
-    error = "Failed to load news articles. Please try again later.";
+    // Provide a more user-friendly error message
+    error = `Failed to load news articles. ${e.message || 'Please try again later.'}`;
   }
 
   return (
     <div className="space-y-8">
-      {/* Removed: <h1 className="text-3xl font-bold tracking-tight">Top Stories</h1> */}
-
+      {/* Error Alert */}
       {error && (
-         <Alert variant="destructive">
+         <Alert variant="destructive" className="mt-4"> {/* Added margin top */}
            <Terminal className="h-4 w-4" />
-           <AlertTitle>Error</AlertTitle>
+           <AlertTitle>Error Loading News</AlertTitle>
            <AlertDescription>{error}</AlertDescription>
          </Alert>
       )}
 
+      {/* Loading/No Articles Message */}
       {!error && articles.length === 0 && (
-        <p className="text-muted-foreground">No articles found.</p>
+        <div className="text-center py-10">
+            <p className="text-muted-foreground">Loading articles or none found...</p>
+            {/* Optional: Add a spinner here */}
+        </div>
       )}
 
+      {/* Article Grid */}
       {!error && articles.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {articles.map((article, index) => (
-            <ArticleCard key={article.url || index} article={article} />
+            // Use a more robust key if possible, e.g., article ID if available, otherwise URL + index
+            <ArticleCard key={article.url + '-' + index} article={article} />
           ))}
         </div>
       )}
